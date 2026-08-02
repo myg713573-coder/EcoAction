@@ -1,0 +1,16 @@
+# Ignore local env files
+/backend/.env
+/frontend/.env.local
+
+# Ignore node modules and build output
+/backend/node_modules
+/frontend/node_modules
+
+/backend/dist
+/frontend/.next
+
+# OS files
+.DS_Store
+
+# Editor files
+.vscode/

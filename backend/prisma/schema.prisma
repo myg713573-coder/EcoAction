@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  password       String
+  username       String    @unique
+  role           UserRole  @default(USER)
+  coins          BigInt    @default(0)
+  cashBalance    BigInt    @default(0)
+  referralCode   String    @unique
+  referredBy     String?   
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  tasks          TaskSubmission[]
+  withdrawals    Withdrawal[]
+  notifications  Notification[]
+  referrals      Referral[] @relation("ReferralUser")
+  referredUsers  Referral[] @relation("ReferralReferred")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+model Task {
+  id               String         @id @default(uuid())
+  title            String
+  description      String
+  rewardAmount     BigInt
+  proofType        ProofType
+  maxParticipants  Int
+  status           TaskStatus     @default(ACTIVE)
+  deadline         DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  submissions      TaskSubmission[]
+}
+
+enum ProofType {
+  SCREENSHOT
+  LINK
+  TEXT
+  VIDEO
+}
+
+enum TaskStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model TaskSubmission {
+  id           String     @id @default(uuid())
+  user         User       @relation(fields: [userId], references: [id])
+  userId       String
+  task         Task       @relation(fields: [taskId], references: [id])
+  taskId       String
+  proof        String
+  status       SubmissionStatus @default(PENDING)
+  adminNote    String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Banner {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  buttonText  String
+  link        String
+  imageUrl    String?
+  background  String  @default("#0f172a")
+  priority    Int     @default(0)
+  isActive    Boolean @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Withdrawal {
+  id             String        @id @default(uuid())
+  user           User          @relation(fields: [userId], references: [id])
+  userId         String
+  amount         BigInt
+  paymentMethod  String
+  paymentDetails String
+  status         WithdrawalStatus @default(PENDING)
+  adminNote      String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Referral {
+  id         String   @id @default(uuid())
+  user       User     @relation("ReferralUser", fields: [userId], references: [id])
+  userId     String
+  referred   User     @relation("ReferralReferred", fields: [referredId], references: [id])
+  referredId String
+  createdAt  DateTime @default(now())
+}
