@@ -9,4 +9,9 @@ export class UsersController {
   async profile(@Query('userId') userId: string) {
     return this.usersService.findProfile(userId)
   }
+
+  @Get('referrals')
+  async referrals(@Query('userId') userId: string) {
+    return this.usersService.listReferrals(userId)
+  }
 }
