@@ -11,12 +11,13 @@ export default function RegisterPage() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [referralCode, setReferralCode] = useState('')
   const [error, setError] = useState('')
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     try {
-      const response = await authApi.register({ email, username, password })
+      const response = await authApi.register({ email, username, password, referralCode: referralCode.trim() || undefined })
       setUser(response.data)
       router.push('/dashboard')
     } catch (err) {
@@ -33,6 +34,7 @@ export default function RegisterPage() {
           <FormField label="Username" name="username" value={username} onChange={setUsername} placeholder="your username" />
           <FormField label="Email" name="email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" />
           <FormField label="Password" name="password" type="password" value={password} onChange={setPassword} placeholder="••••••••" />
+          <FormField label="Referral Code (optional)" name="referralCode" value={referralCode} onChange={setReferralCode} placeholder="EAABC123" />
           {error ? <p className="text-sm text-rose-400">{error}</p> : null}
           <button type="submit" className="w-full rounded-3xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400">
             Create account

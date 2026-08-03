@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ecoaction-backend
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: cd backend && npm install && npx prisma generate && npm run build
+    startCommand: cd backend && npx prisma migrate deploy && npm run start
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: PORT
+        value: 4000
+      - key: NODE_ENV
+        value: production

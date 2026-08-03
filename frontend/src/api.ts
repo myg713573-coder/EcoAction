@@ -38,6 +38,7 @@ export type RegisterPayload = {
   email: string
   username: string
   password: string
+  referralCode?: string
 }
 
 export type UserProfile = {
@@ -48,6 +49,19 @@ export type UserProfile = {
   coins: string
   cashBalance: string
   referralCode: string
+  referredBy?: string | null
+  referralCount?: number
+}
+
+export type ReferralRecord = {
+  id: string
+  createdAt: string
+  referred: {
+    id: string
+    username: string
+    email: string
+    createdAt: string
+  }
 }
 
 export type Task = {
@@ -81,6 +95,7 @@ export const authApi = {
 
 export const userApi = {
   profile: (userId: string) => api.get<UserProfile>(`/users/profile?userId=${userId}`),
+  referrals: (userId: string) => api.get<ReferralRecord[]>(`/users/referrals?userId=${userId}`),
 }
 
 export const tasksApi = {

@@ -26,5 +26,6 @@
 
 - Backend requires a production `DATABASE_URL` environment variable.
 - Frontend should point `NEXT_PUBLIC_API_BASE_URL` to the deployed backend URL.
+- Netlify deployment uses the included `netlify.toml` file with the `@netlify/plugin-nextjs` plugin.
 - Use `prisma migrate deploy` (or `prisma migrate dev` for staging) against your production database before starting the backend.
 - Do not commit `.env` or `frontend/.env.local` to source control.

@@ -7,6 +7,7 @@ export default function DashboardPage() {
   const { user } = useAuth()
   const [tasks, setTasks] = useState<{ id: string; title: string; description: string; rewardAmount: string }[]>([])
   const [profile, setProfile] = useState(user)
+  const [referrals, setReferrals] = useState<{ id: string; referred: { username: string; email: string; createdAt: string } }[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -16,9 +17,14 @@ export default function DashboardPage() {
         return
       }
       try {
-        const [taskRes, profileRes] = await Promise.all([tasksApi.list(), userApi.profile(user.id)])
+        const [taskRes, profileRes, referralRes] = await Promise.all([
+          tasksApi.list(),
+          userApi.profile(user.id),
+          userApi.referrals(user.id),
+        ])
         setTasks(taskRes.data)
         setProfile(profileRes.data)
+        setReferrals(referralRes.data)
       } catch {
         // ignore for now
       } finally {
@@ -53,6 +59,38 @@ export default function DashboardPage() {
           <div className="rounded-3xl bg-slate-900/80 p-8 shadow-soft ring-1 ring-slate-800">
             <p className="text-sm text-slate-400">Referral Code</p>
             <p className="mt-4 text-3xl font-semibold text-white">{profile?.referralCode ?? '—'}</p>
+          </div>
+        </section>
+
+        <section className="rounded-3xl bg-slate-900/80 p-8 shadow-soft ring-1 ring-slate-800">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">Referral system</p>
+              <h2 className="mt-3 text-3xl font-semibold text-white">Invite friends and grow your earnings</h2>
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6">
+              <p className="text-sm text-slate-400">Your referral code</p>
+              <p className="mt-3 text-2xl font-semibold text-white">{profile?.referralCode ?? '—'}</p>
+              <p className="mt-3 text-sm text-slate-400">Referral count: {profile?.referralCount ?? 0}</p>
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6">
+              <p className="text-sm text-slate-400">What happens</p>
+              <p className="mt-3 text-slate-300">When a new user signs up with your code, you receive a bonus and the new account receives a welcome reward.</p>
+            </div>
+          </div>
+          <div className="mt-6 space-y-3">
+            {referrals.length === 0 ? (
+              <p className="text-slate-400">No referrals yet. Share your code with friends to get started.</p>
+            ) : (
+              referrals.map((referral) => (
+                <div key={referral.id} className="rounded-3xl border border-slate-800 bg-slate-950/80 p-4">
+                  <p className="text-white">{referral.referred.username}</p>
+                  <p className="text-sm text-slate-400">{referral.referred.email}</p>
+                </div>
+              ))
+            )}
           </div>
         </section>
 
