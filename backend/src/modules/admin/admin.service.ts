@@ -6,12 +6,27 @@ export class AdminService {
   constructor(private prisma: PrismaService) {}
 
   async stats() {
-    const users = await this.prisma.user.count()
-    const tasks = await this.prisma.task.count()
-    const pendingSubmissions = await this.prisma.taskSubmission.count({ where: { status: 'PENDING' } })
-    const pendingWithdrawals = await this.prisma.withdrawal.count({ where: { status: 'PENDING' } })
-    const banners = await this.prisma.banner.count({ where: { isActive: true } })
-    return { users, tasks, pendingSubmissions, pendingWithdrawals, banners }
+    const [users, tasks, pendingSubmissions, pendingWithdrawals, banners, approvedWithdrawals, totalCoins, totalCash] = await Promise.all([
+      this.prisma.user.count(),
+      this.prisma.task.count(),
+      this.prisma.taskSubmission.count({ where: { status: 'PENDING' } }),
+      this.prisma.withdrawal.count({ where: { status: 'PENDING' } }),
+      this.prisma.banner.count({ where: { isActive: true } }),
+      this.prisma.withdrawal.count({ where: { status: 'APPROVED' } }),
+      this.prisma.user.aggregate({ _sum: { coins: true } }),
+      this.prisma.user.aggregate({ _sum: { cashBalance: true } }),
+    ])
+
+    return {
+      users,
+      tasks,
+      pendingSubmissions,
+      pendingWithdrawals,
+      banners,
+      approvedWithdrawals,
+      totalCoins: totalCoins._sum.coins?.toString() ?? '0',
+      totalCash: totalCash._sum.cashBalance?.toString() ?? '0',
+    }
   }
 
   async listTasks() {
@@ -131,15 +146,38 @@ export class AdminService {
     })
   }
 
-  async listUsers() {
+  async listUsers(search?: string) {
+    const where = search
+      ? {
+          OR: [
+            { email: { contains: search, mode: 'insensitive' as const } },
+            { username: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : undefined
+
     return this.prisma.user.findMany({
-      select: { id: true, email: true, username: true, role: true, coins: true, cashBalance: true, referralCode: true },
+      where,
+      select: { id: true, email: true, username: true, role: true, coins: true, cashBalance: true, referralCode: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
     })
   }
 
-  async listWithdrawals() {
+  async listWithdrawals(status?: 'PENDING' | 'APPROVED' | 'REJECTED', search?: string) {
+    const where = {
+      ...(status ? { status } : {}),
+      ...(search
+        ? {
+            OR: [
+              { paymentMethod: { contains: search, mode: 'insensitive' as const } },
+              { paymentDetails: { contains: search, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
+    }
+
     return this.prisma.withdrawal.findMany({
+      where,
       orderBy: { createdAt: 'desc' },
       include: { user: true },
     })

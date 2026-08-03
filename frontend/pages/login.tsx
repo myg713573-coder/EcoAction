@@ -11,15 +11,24 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setError('')
+    setIsSubmitting(true)
+
     try {
       const response = await authApi.login({ email, password })
       setUser(response.data)
       router.push('/dashboard')
-    } catch {
-      setError('Login failed. Check credentials.')
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ||
+        (err?.code === 'ERR_NETWORK' ? 'Unable to reach the server. Please try again later.' : 'Login failed. Check credentials.')
+      setError(message)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -32,8 +41,12 @@ export default function LoginPage() {
           <FormField label="Email" name="email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" />
           <FormField label="Password" name="password" type="password" value={password} onChange={setPassword} placeholder="••••••••" />
           {error ? <p className="text-sm text-rose-400">{error}</p> : null}
-          <button type="submit" className="w-full rounded-3xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400">
-            Sign in
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full rounded-3xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>
           <div className="flex items-center justify-between text-sm text-slate-400">
             <Link href="/forgot-password" className="hover:text-cyan-300">Forgot password?</Link>

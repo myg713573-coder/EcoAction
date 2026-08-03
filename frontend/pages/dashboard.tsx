@@ -8,6 +8,11 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState<{ id: string; title: string; description: string; rewardAmount: string }[]>([])
   const [profile, setProfile] = useState(user)
   const [referrals, setReferrals] = useState<{ id: string; referred: { username: string; email: string; createdAt: string } }[]>([])
+  const [activity, setActivity] = useState<{
+    submissions: Array<{ id: string; status: string; createdAt: string; task: { title: string } }>
+    withdrawals: Array<{ id: string; status: string; amount: string; createdAt: string }>
+    referrals: Array<{ id: string; createdAt: string; referred: { username: string } }> 
+  }>({ submissions: [], withdrawals: [], referrals: [] })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -17,14 +22,16 @@ export default function DashboardPage() {
         return
       }
       try {
-        const [taskRes, profileRes, referralRes] = await Promise.all([
+        const [taskRes, profileRes, referralRes, activityRes] = await Promise.all([
           tasksApi.list(),
           userApi.profile(user.id),
           userApi.referrals(user.id),
+          userApi.activity(user.id),
         ])
         setTasks(taskRes.data)
         setProfile(profileRes.data)
         setReferrals(referralRes.data)
+        setActivity(activityRes.data)
       } catch {
         // ignore for now
       } finally {
@@ -42,12 +49,17 @@ export default function DashboardPage() {
             <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">Dashboard</p>
             <h1 className="mt-3 text-4xl font-semibold text-white">Welcome back, {profile?.username ?? 'user'}</h1>
           </div>
-          <Link href="/" className="inline-flex rounded-full border border-slate-700 bg-slate-950 px-5 py-3 text-sm text-slate-100 transition hover:border-cyan-400">
-            Back to landing
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/tasks" className="inline-flex rounded-full bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400">
+              Browse tasks
+            </Link>
+            <Link href="/withdrawals" className="inline-flex rounded-full border border-slate-700 bg-slate-950 px-5 py-3 text-sm text-slate-100 transition hover:border-cyan-400">
+              Withdraw funds
+            </Link>
+          </div>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-3">
+        <section className="grid gap-6 lg:grid-cols-4">
           <div className="rounded-3xl bg-slate-900/80 p-8 shadow-soft ring-1 ring-slate-800">
             <p className="text-sm text-slate-400">Current Coins</p>
             <p className="mt-4 text-3xl font-semibold text-white">{profile ? Number(profile.coins).toLocaleString() : '—'}</p>
@@ -59,6 +71,34 @@ export default function DashboardPage() {
           <div className="rounded-3xl bg-slate-900/80 p-8 shadow-soft ring-1 ring-slate-800">
             <p className="text-sm text-slate-400">Referral Code</p>
             <p className="mt-4 text-3xl font-semibold text-white">{profile?.referralCode ?? '—'}</p>
+          </div>
+          <div className="rounded-3xl bg-slate-900/80 p-8 shadow-soft ring-1 ring-slate-800">
+            <p className="text-sm text-slate-400">Referrals</p>
+            <p className="mt-4 text-3xl font-semibold text-white">{referrals.length}</p>
+          </div>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-3xl bg-slate-900/80 p-8 shadow-soft ring-1 ring-slate-800">
+            <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">Quick tips</p>
+            <ul className="mt-4 space-y-3 text-sm text-slate-300">
+              <li>• Complete high-reward tasks to grow your balance faster.</li>
+              <li>• Share your referral code to earn bonuses from new users.</li>
+              <li>• Keep your withdrawal details updated for faster approvals.</li>
+            </ul>
+          </div>
+          <div className="rounded-3xl bg-slate-900/80 p-8 shadow-soft ring-1 ring-slate-800">
+            <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">Milestones</p>
+            <div className="mt-4 space-y-3">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                <p className="text-white">Starter level</p>
+                <p className="text-sm text-slate-400">Complete your first task to unlock more opportunities.</p>
+              </div>
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                <p className="text-white">Referrer level</p>
+                <p className="text-sm text-slate-400">Bring in new users and grow your rewards pipeline.</p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -91,6 +131,56 @@ export default function DashboardPage() {
                 </div>
               ))
             )}
+          </div>
+        </section>
+
+        <section className="rounded-3xl bg-slate-900/80 p-8 shadow-soft ring-1 ring-slate-800">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">Recent activity</p>
+              <h2 className="mt-3 text-3xl font-semibold text-white">Your latest milestones</h2>
+            </div>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6">
+              <p className="text-sm text-slate-400">Task submissions</p>
+              {activity.submissions.length === 0 ? (
+                <p className="mt-3 text-slate-300">No submissions yet.</p>
+              ) : (
+                activity.submissions.slice(0, 3).map((submission) => (
+                  <div key={submission.id} className="mt-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-3">
+                    <p className="text-white">{submission.task.title}</p>
+                    <p className="text-sm text-slate-400">{submission.status} • {new Date(submission.createdAt).toLocaleDateString()}</p>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6">
+              <p className="text-sm text-slate-400">Withdrawals</p>
+              {activity.withdrawals.length === 0 ? (
+                <p className="mt-3 text-slate-300">No withdrawal requests yet.</p>
+              ) : (
+                activity.withdrawals.slice(0, 3).map((withdrawal) => (
+                  <div key={withdrawal.id} className="mt-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-3">
+                    <p className="text-white">${Number(withdrawal.amount).toLocaleString()}</p>
+                    <p className="text-sm text-slate-400">{withdrawal.status} • {new Date(withdrawal.createdAt).toLocaleDateString()}</p>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6">
+              <p className="text-sm text-slate-400">Referrals</p>
+              {activity.referrals.length === 0 ? (
+                <p className="mt-3 text-slate-300">Your referral growth will show up here.</p>
+              ) : (
+                activity.referrals.slice(0, 3).map((referral) => (
+                  <div key={referral.id} className="mt-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-3">
+                    <p className="text-white">{referral.referred.username}</p>
+                    <p className="text-sm text-slate-400">{new Date(referral.createdAt).toLocaleDateString()}</p>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </section>
 

@@ -51,6 +51,10 @@ export type UserProfile = {
   referralCode: string
   referredBy?: string | null
   referralCount?: number
+  pendingWithdrawals?: number
+  approvedWithdrawals?: number
+  taskSubmissions?: number
+  createdAt?: string
 }
 
 export type ReferralRecord = {
@@ -96,6 +100,12 @@ export const authApi = {
 export const userApi = {
   profile: (userId: string) => api.get<UserProfile>(`/users/profile?userId=${userId}`),
   referrals: (userId: string) => api.get<ReferralRecord[]>(`/users/referrals?userId=${userId}`),
+  activity: (userId: string) =>
+    api.get<{
+      submissions: Array<{ id: string; status: string; createdAt: string; task: { title: string } }>
+      withdrawals: Array<{ id: string; status: string; amount: string; createdAt: string }>
+      referrals: Array<{ id: string; createdAt: string; referred: { username: string } }>
+    }>(`/users/activity?userId=${userId}`),
 }
 
 export const tasksApi = {

@@ -11,13 +11,13 @@ export class AdminController {
   }
 
   @Get('users')
-  async users() {
-    return this.adminService.listUsers()
+  async users(@Query('search') search?: string) {
+    return this.adminService.listUsers(search)
   }
 
   @Get('withdrawals')
-  async withdrawals() {
-    return this.adminService.listWithdrawals()
+  async withdrawals(@Query('status') status?: 'PENDING' | 'APPROVED' | 'REJECTED', @Query('search') search?: string) {
+    return this.adminService.listWithdrawals(status, search)
   }
 
   @Get('tasks')

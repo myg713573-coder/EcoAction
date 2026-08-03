@@ -13,9 +13,13 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [referralCode, setReferralCode] = useState('')
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setError('')
+    setIsSubmitting(true)
+
     try {
       const response = await authApi.register({ email, username, password, referralCode: referralCode.trim() || undefined })
       setUser(response.data)
@@ -26,6 +30,8 @@ export default function RegisterPage() {
         (err?.code === 'ERR_NETWORK' ? 'Unable to reach the server. Please make sure the backend is running and try again.' : err?.message) ||
         'Registration failed. Please try again.'
       setError(message)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -40,8 +46,12 @@ export default function RegisterPage() {
           <FormField label="Password" name="password" type="password" value={password} onChange={setPassword} placeholder="••••••••" />
           <FormField label="Referral Code (optional)" name="referralCode" value={referralCode} onChange={setReferralCode} placeholder="EAABC123" />
           {error ? <p className="text-sm text-rose-400">{error}</p> : null}
-          <button type="submit" className="w-full rounded-3xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400">
-            Create account
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full rounded-3xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isSubmitting ? 'Creating account...' : 'Create account'}
           </button>
           <p className="text-center text-sm text-slate-400">
             Already have an account? <Link href="/login" className="text-cyan-300 hover:text-cyan-200">Sign in</Link>

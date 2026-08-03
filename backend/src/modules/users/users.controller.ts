@@ -14,4 +14,9 @@ export class UsersController {
   async referrals(@Query('userId') userId: string) {
     return this.usersService.listReferrals(userId)
   }
+
+  @Get('activity')
+  async activity(@Query('userId') userId: string) {
+    return this.usersService.listUserActivity(userId)
+  }
 }
