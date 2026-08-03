@@ -21,7 +21,10 @@ export default function RegisterPage() {
       setUser(response.data)
       router.push('/dashboard')
     } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Registration failed. Please try again.'
+      const message =
+        err?.response?.data?.message ||
+        (err?.code === 'ERR_NETWORK' ? 'Unable to reach the server. Please make sure the backend is running and try again.' : err?.message) ||
+        'Registration failed. Please try again.'
       setError(message)
     }
   }
