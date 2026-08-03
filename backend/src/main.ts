@@ -33,8 +33,10 @@ class BigIntResponseInterceptor implements NestInterceptor {
 async function bootstrap() {
   dotenv.config()
   const app = await NestFactory.create(AppModule)
+  const port = Number(process.env.PORT || 4000)
+
   app.useGlobalInterceptors(new BigIntResponseInterceptor())
-  app.enableCors({ origin: true })
-  await app.listen(process.env.PORT ? Number(process.env.PORT) : 4000)
+  app.enableCors({ origin: true, credentials: true })
+  await app.listen(port, '0.0.0.0')
 }
 bootstrap()

@@ -5,19 +5,25 @@
 ### Backend
 - DATABASE_URL
 - PORT=4000
+- NODE_ENV=production
 
 ### Frontend
 - NEXT_PUBLIC_API_BASE_URL=https://your-render-backend-url
+
+### Public verification
+- `GET /health` should return a JSON payload like `{ "status": "ok", "service": "ecoaction-backend" }`
+- `GET /` should return the API root payload instead of a 404
 
 ## Recommended cloud deployment
 
 ### Option A: Netlify + Render
 1. Deploy the backend to Render using the included `render.yaml`.
 2. After the backend is live, copy its public HTTPS URL.
-3. Set the live `DATABASE_URL` in Render.
-4. Deploy the frontend to Netlify using the included `netlify.toml`.
-5. In Netlify, set the environment variable `NEXT_PUBLIC_API_BASE_URL` to the public Render backend URL.
-6. Redeploy the frontend after the env change.
+3. Confirm that `https://<render-url>/health` responds with the expected JSON payload.
+4. Set the live `DATABASE_URL` in Render.
+5. Deploy the frontend to Netlify using the included `netlify.toml`.
+6. In Netlify, set the environment variable `NEXT_PUBLIC_API_BASE_URL` to the public Render backend URL.
+7. Redeploy the frontend after the env change.
 
 ### Option B: Docker Compose
 1. Run the stack locally using `docker compose up --build`.
