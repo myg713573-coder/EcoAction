@@ -20,8 +20,9 @@ export default function RegisterPage() {
       const response = await authApi.register({ email, username, password, referralCode: referralCode.trim() || undefined })
       setUser(response.data)
       router.push('/dashboard')
-    } catch (err) {
-      setError('Registration failed. Please try again.')
+    } catch (err: any) {
+      const message = err?.response?.data?.message || err?.message || 'Registration failed. Please try again.'
+      setError(message)
     }
   }
 
