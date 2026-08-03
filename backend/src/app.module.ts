@@ -1,5 +1,6 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { AppController } from './app.controller'
 import { AuthModule } from './modules/auth/auth.module'
 import { UsersModule } from './modules/users/users.module'
 import { TasksModule } from './modules/tasks/tasks.module'
@@ -18,6 +19,7 @@ import { AdminMiddleware } from './middleware/admin.middleware'
     WithdrawalsModule,
     AdminModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
